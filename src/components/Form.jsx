@@ -3,6 +3,7 @@ import emailjs from '@emailjs/browser';
 import { static_address } from '../utils/data';
 import '../utils/styles.css'
 import toast, { Toaster } from 'react-hot-toast';
+import Modal from './Modal';
 
 
 const Form = () => {
@@ -21,6 +22,8 @@ const Form = () => {
     const [districtData, setDistrictData] = useState([]);
     const [selectedPs, setSelectedPs] = useState([]);
     const [selectedUnion, setSelectedUnion] = useState([]);
+    const [modal, setModal] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const form = useRef();
 
@@ -38,16 +41,19 @@ const Form = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setIsSubmitted(true)
         const formData = { ...userRegistration };
         formData.district = district;
         formData.police_station = police_station;
         formData.union = union;
 
-        emailjs.sendForm('service_n9hu026', 'template_5huweii', formData, '64-N8hWoA4VjjIxb4')
+        emailjs.send('service_0olswbq', 'template_to9ft38', formData, 'MRgVb2dOyAum68TDU')
             .then(() => {
                 toast("Your request is submitted successfully", {
                     style: { color: 'indianred' }
-                })
+                });
+                setIsSubmitted(false);
+                toggleModal();
                 setUserRegistration({
                     username: "",
                     user_phone: "",
@@ -64,6 +70,7 @@ const Form = () => {
             .catch((err) => console.log("error :", err));
 
         // emailjs.send('service_n9hu026', 'template_5huweii', formData, '64-N8hWoA4VjjIxb4')
+
     };
 
 
@@ -93,11 +100,26 @@ const Form = () => {
         setUnion(union);
     }
 
+    const toggleModal = () => {
+        setModal(!modal);
+    };
+
+    const closeModal = () => {
+        setModal(false);
+        window.location.reload();
+    }
+
+    // if (modal) {
+    //     document.body.classList.add('active-modal')
+    // } else {
+    //     document.body.classList.remove('active-modal')
+    // }
+
 
     return (
         <div className='container'>
 
-            <div>
+            {!isSubmitted ? (<div>
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0px' }}>
                     <h5 className='header text-beautify'>
                         ফ্রি সংযোগের জন্য আবেদন করুন
@@ -123,7 +145,7 @@ const Form = () => {
                                 value={userRegistration.address}
                                 onChange={handleInput}
                                 className='input-field'
-                                placeholder='আপনার বিস্তারিত ঠিকানা দিন '
+                                placeholder='বিস্তারিত ঠিকানা দিন '
                                 required
                             />
                         </div>
@@ -134,7 +156,7 @@ const Form = () => {
                                 value={userRegistration.user_phone}
                                 onChange={handleInput}
                                 className='input-field'
-                                placeholder='019......70'
+                                placeholder='01.........70'
                                 required
                             />
                         </div>
@@ -150,16 +172,16 @@ const Form = () => {
                             />
                         </div>
                         <br />
-                        <div >
+                        <div className='select-wrapper'>
                             <select value={district}
-                                className='user-info-block header text-beautify'
+                                className='text-beautify decorated'
                                 name={district}
                                 onChange={changeDistrict}
                                 required
                             >
-                                <option className='text-beautify decorated' value={""}>--আপনার জেলা নির্বাচন করুন--</option>
+                                <option className='text-beautify' value={""}>--আপনার জেলা নির্বাচন করুন--</option>
                                 {districtData.map((ctr) => (
-                                    <option className='text-beautify decorated' value={ctr.name}>{ctr.name}</option>
+                                    <option className='text-beautify ' value={ctr.name}>{ctr.name}</option>
                                 ))}
                             </select>
                             <br />
@@ -167,15 +189,15 @@ const Form = () => {
 
                         <div >
                             <select value={police_station}
-                                className='user-info-block header text-beautify'
+                                className='text-beautify decorated'
                                 onChange={changePolice_stations}
                                 required
                                 name={police_station}
                             >
-                                <option className='text-beautify decorated' value={""}>--আপনার উপজেলা নির্বাচন করুন--</option>
+                                <option className='text-beautify' value={""}>--আপনার উপজেলা নির্বাচন করুন--</option>
                                 {
                                     selectedPs.map((ps) => (
-                                        <option className='text-beautify decorated' value={ps.name}>{ps.name}</option>
+                                        <option className='text-beautify' value={ps.name}>{ps.name}</option>
                                     ))
                                 }
                             </select>
@@ -183,18 +205,17 @@ const Form = () => {
                         </div>
                         <div>
                             <select
-                                className='user-info-block header text-beautify'
+                                className='text-beautify decorated'
                                 value={union}
                                 onChange={changeUnion}
                                 required
                                 name={union}
-                            // onfocus='this.size=10;' onchange='this.size=1; this.blur();'
                             >
 
-                                <option className='name-field text-beautify decorated' value={""}>--আপনার ইউনিয়ন নির্বাচন করুন--</option>
+                                <option className='name-field text-beautify' value={""}>--আপনার ইউনিয়ন নির্বাচন করুন--</option>
                                 {
                                     selectedUnion.map((cty) => (
-                                        <option className='text-beautify decorated' value={cty}>{cty}</option>
+                                        <option className='text-beautify' value={cty}>{cty}</option>
                                     ))
                                 }
                             </select>
@@ -203,13 +224,19 @@ const Form = () => {
                         <br />
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px', }}>
-                            <button type='submit' className='text-beautify' style={{ padding: '.5em 3em', borderRadius: '5em' }}>Submit</button>
+                            <button disabled={isSubmitted} type='submit' className='text-beautify' style={{ padding: '.5em 3em', borderRadius: '5em' }}>Submit</button>
                         </div>
                         <br />
                     </form>
                 </div>
 
-            </div>
+            </div>)
+                : (
+                    <div style={{ height: '100vh', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <p>Submitting...</p>
+                    </div>
+                )}
+            <Modal username={userRegistration.username} modal={modal} closeModal={closeModal} />
         </div>
     )
 }
